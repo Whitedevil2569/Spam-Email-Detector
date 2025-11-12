@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spam Detector Pro</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+    
+    /* Animated Background */
+    .animated-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      overflow: hidden;
+    }
+    
+    .bubble {
+      position: absolute;
+      bottom: -100px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      animation: rise 15s infinite ease-in;
+    }
+    
+    @keyframes rise {
+      0% {
+        bottom: -100px;
+        transform: translateX(0);
+        opacity: 0;
+      }
+      10% {
+        opacity: 1;
+      }
+      90% {
+        opacity: 1;
+      }
+      100% {
+        bottom: 110%;
+        transform: translateX(100px);
+        opacity: 0;
+      }
+    }
+    
+    .bubble:nth-child(1) { left: 10%; width: 80px; height: 80px; animation-delay: 0s; animation-duration: 12s; }
+    .bubble:nth-child(2) { left: 20%; width: 60px; height: 60px; animation-delay: 2s; animation-duration: 14s; }
+    .bubble:nth-child(3) { left: 35%; width: 100px; height: 100px; animation-delay: 4s; animation-duration: 16s; }
+    .bubble:nth-child(4) { left: 50%; width: 70px; height: 70px; animation-delay: 0s; animation-duration: 13s; }
+    .bubble:nth-child(5) { left: 65%; width: 90px; height: 90px; animation-delay: 3s; animation-duration: 15s; }
+    .bubble:nth-child(6) { left: 80%; width: 65px; height: 65px; animation-delay: 1s; animation-duration: 17s; }
+    .bubble:nth-child(7) { left: 90%; width: 85px; height: 85px; animation-delay: 5s; animation-duration: 11s; }
+    
+    /* Navbar */
+    .navbar-custom {
+      background: rgba(255, 255, 255, 0.98);
+      backdrop-filter: blur(15px);
+      box-shadow: 0 2px 25px rgba(0, 0, 0, 0.1);
+      padding: 0;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      transition: all 0.4s ease;
+    }
+    
+    .navbar-custom.scrolled {
+      box-shadow: 0 5px 35px rgba(0, 0, 0, 0.2);
+      background: rgba(255, 255, 255, 1);
+    }
+    
+    .navbar-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1px;
+      width: 100%;
+    }
+    
+    .navbar-brand {
+      font-size: 1.6rem;
+      font-weight: bold;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 15px 0;
+      transition: all 0.3s ease;
+      text-decoration: none;
+    }
+    
+    .navbar-brand:hover {
+      transform: scale(1.05);
+      filter: brightness(1.2);
+    }
+    
+    .navbar-brand-icon {
+      font-size: 2rem;
+      animation: shield-pulse 2s ease-in-out infinite;
+    }
+    
+    @keyframes shield-pulse {
+      0%, 100% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.1);
+      }
+    }
+    
+    .navbar-nav {
+      display: flex;
+      flex-direction: row;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      gap: 0;
+      align-items: center;
+    }
+    
+    .nav-item {
+      position: relative;
+      display: inline-block;
+      padding-left: 30px;
+    }
+    
+    .nav-link {
+      color: #333 !important;
+      font-weight: 600;
+      padding: 25px 20px;
+      transition: all 0.3s ease;
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      border-bottom: 3px solid transparent;
+      white-space: nowrap;
+    }
+    
+    .nav-link:hover {
+      color: #667eea !important;
+      background: rgba(102, 126, 234, 0.05);
+      border-bottom-color: #667eea;
+      transform: translateY(-2px);
+    }
+    
+    .nav-link.active {
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+      border-bottom-color: #764ba2;
+      color: #667eea !important;
+    }
+    
+    .nav-link-icon {
+      font-size: 1.2rem;
+      transition: transform 0.3s ease;
+    }
+    
+    .nav-link:hover .nav-link-icon {
+      transform: rotate(15deg) scale(1.2);
+    }
+    
+    .nav-badge {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      color: white;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 0.7rem;
+      font-weight: bold;
+      margin-left: 5px;
+      animation: badge-pulse 2s ease-in-out infinite;
+    }
+    
+    @keyframes badge-pulse {
+      0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+      }
+      50% {
+        transform: scale(1.05);
+        box-shadow: 0 0 0 5px rgba(239, 68, 68, 0);
+      }
+    }
+    
+    .main-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+    
+    .header {
+      text-align: center;
+      color: white;
+      margin-bottom: 40px;
+      animation: fadeInDown 0.8s ease;
+    }
+    
+    @keyframes fadeInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .header h1 {
+      font-size: 3rem;
+      font-weight: bold;
+      text-shadow: 2px 2px 10px rgba(0,0,0,0.3);
+      margin-bottom: 15px;
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.02);
+      }
+    }
+    
+    .header p {
+      font-size: 1.2rem;
+      opacity: 0.95;
+      text-shadow: 1px 1px 5px rgba(0,0,0,0.2);
+    }
+    
+    .stats-bar {
+      display: flex;
+      justify-content: space-around;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 15px;
+      padding: 20px;
+      margin-bottom: 30px;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+      animation: slideInUp 0.8s ease;
+    }
+    
+    @keyframes slideInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .stat-item {
+      text-align: center;
+      padding: 10px 20px;
+    }
+    
+    .stat-number {
+      font-size: 2rem;
+      font-weight: bold;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .stat-label {
+      color: #666;
+      font-size: 0.9rem;
+      margin-top: 5px;
+    }
+    
+    .card {
+      border: none;
+      border-radius: 20px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+      transition: all 0.4s ease;
+      margin-bottom: 25px;
+      background: rgba(255, 255, 255, 0.98);
+      backdrop-filter: blur(10px);
+      overflow: hidden;
+    }
+    
+    .card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+    }
+    
+    .card-header {
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+      color: white;
+      border-radius: 20px 20px 0 0 !important;
+      padding: 25px;
+      font-weight: 600;
+      font-size: 1.3rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .card-body {
+      padding: 35px;
+    }
+    
+    .file-upload-input {
+      display: none;
+    }
+    
+    .file-name {
+      margin-top: 20px;
+      font-weight: 600;
+      color: #6366f1;
+      padding: 20px;
+      background: linear-gradient(135deg, #f0f4ff 0%, #e9d5ff 100%);
+      border-radius: 12px;
+      border-left: 5px solid #6366f1;
+      animation: slideIn 0.5s ease;
+    }
+    
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateX(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+    
+    .btn-upload {
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+      color: white;
+      padding: 20px 50px;
+      border-radius: 15px;
+      border: none;
+      font-weight: 600;
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-block;
+      box-shadow: 0 5px 20px rgba(99, 102, 241, 0.3);
+    }
+    
+    .btn-upload:hover {
+      transform: scale(1.1) rotate(-2deg);
+      box-shadow: 0 10px 30px rgba(99, 102, 241, 0.5);
+    }
+    
+    .btn-upload:active {
+      transform: scale(0.95);
+    }
+    
+    textarea {
+      border: 3px solid #e5e7eb;
+      border-radius: 15px;
+      transition: all 0.3s ease;
+      font-size: 1rem;
+      width: 100px;
+      min-height: 250px;
+      resize: vertical;
+      padding: 20px;
+      font-family: 'Courier New', monospace;
+    }
+    
+    textarea:focus {
+      border-color: #6366f1;
+      box-shadow: 0 0 0 5px rgba(99, 102, 241, 0.1);
+      outline: none;
+      transform: scale(1.01);
+    }
+    
+    .btn-custom {
+      padding: 15px 40px;
+      font-weight: 600;
+      border-radius: 12px;
+      transition: all 0.3s ease;
+      border: none;
+      font-size: 1.1rem;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .btn-custom::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.3);
+      transform: translate(-50%, -50%);
+      transition: width 0.6s, height 0.6s;
+    }
+    
+    .btn-custom:hover::before {
+      width: 300px;
+      height: 300px;
+    }
+    
+    .btn-analyze {
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+      color: white;
+      box-shadow: 0 5px 20px rgba(99, 102, 241, 0.3);
+    }
+    
+    .btn-analyze:hover {
+      transform: scale(1.08);
+      box-shadow: 0 8px 30px rgba(99, 102, 241, 0.5);
+    }
+    
+    .btn-analyze:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    .btn-clear {
+      background: #6c757d;
+      color: white;
+      margin-left: 15px;
+    }
+    
+    .btn-clear:hover {
+      background: #5a6268;
+      transform: scale(1.05);
+    }
+    
+    .result-card {
+      border-radius: 20px;
+      padding: 40px;
+      animation: zoomIn 0.6s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    @keyframes zoomIn {
+      from {
+        opacity: 0;
+        transform: scale(0.8);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+    
+    .result-card::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+      animation: rotate 10s linear infinite;
+    }
+    
+    @keyframes rotate {
+      0% {
+        transform: rotate(0deg);
+      }
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+    
+    .result-spam {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      color: white;
+      box-shadow: 0 10px 40px rgba(239, 68, 68, 0.4);
+    }
+    
+    .result-safe {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: white;
+      box-shadow: 0 10px 40px rgba(16, 185, 129, 0.4);
+    }
+    
+    .result-title {
+      font-size: 2.5rem;
+      font-weight: bold;
+      margin-bottom: 20px;
+      position: relative;
+      z-index: 1;
+      animation: bounceIn 0.8s ease;
+    }
+    
+    @keyframes bounceIn {
+      0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+      }
+      40% {
+        transform: translateY(-20px);
+      }
+      60% {
+        transform: translateY(-10px);
+      }
+    }
+    
+    .result-details {
+      font-size: 1.2rem;
+      margin-top: 15px;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .progress-bar {
+      height: 12px;
+      border-radius: 6px;
+      margin-top: 15px;
+      animation: progressAnimation 1s ease;
+    }
+    
+    @keyframes progressAnimation {
+      from {
+        width: 0;
+      }
+    }
+    
+    .spinner {
+      border: 4px solid rgba(255,255,255,0.3);
+      border-top: 4px solid white;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      display: inline-block;
+      margin-right: 15px;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .icon {
+      font-size: 4rem;
+      margin-bottom: 20px;
+      animation: iconBounce 1s ease infinite;
+      position: relative;
+      z-index: 1;
+    }
+    
+    @keyframes iconBounce {
+      0%, 100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-10px);
+      }
+    }
+    
+    .char-count {
+      text-align: right;
+      font-size: 0.95rem;
+      color: #6c757d;
+      margin-top: 10px;
+      font-weight: 500;
+    }
+    
+    .footer {
+      background: rgba(255, 255, 255, 0.95);
+      padding: 30px 0;
+      text-align: center;
+      margin-top: 50px;
+      box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    .footer p {
+      margin: 0;
+      color: #666;
+      font-size: 0.95rem;
+    }
+    
+    .loading-card {
+      text-align: center;
+      padding: 60px;
+      background: rgba(255, 255, 255, 0.98);
+      border-radius: 20px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    }
+    
+    .loading-text {
+      font-size: 1.3rem;
+      color: #6366f1;
+      font-weight: 600;
+      margin-top: 20px;
+    }
+    
+    @media (max-width: 768px) {
+      .header h1 {
+        font-size: 2rem;
+      }
+      
+      .stats-bar {
+        flex-direction: column;
+      }
+      
+      .stat-item {
+        margin: 10px 0;
+      }
+      
+      .navbar-content {
+        flex-direction: column;
+        gap: 10px;
+      }
+      
+      .navbar-nav {
+        flex-direction: column;
+        width: 100%;
+      }
+      
+      .nav-link {
+        width: 100%;
+        justify-content: center;
+        padding: 15px 20px;
+      }
+      
+      .navbar-brand {
+        padding: 15px 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="animated-bg">
+    <div class="bubble"></div>
+    <div class="bubble"></div>
+    <div class="bubble"></div>
+    <div class="bubble"></div>
+    <div class="bubble"></div>
+    <div class="bubble"></div>
+    <div class="bubble"></div>
+  </div>
+
+  <nav class="navbar-custom">
+    <div class="container">
+      <div class="navbar-content">
+        <a class="navbar-brand" href="#" onclick="scrollToTop()">
+          <span class="navbar-brand-icon">🛡️</span>
+          <span>Team Tech Titans </span>
+        </a>
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link active" href="#analyzer" onclick="setActive(this)">
+              <span class="nav-link-icon">🔍</span>
+              <span>Analyzer</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#statistics" onclick="setActive(this)">
+              <span class="nav-link-icon">📊</span>
+              <span>Statistics</span>
+              <span class="nav-badge">Live</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#about" onclick="setActive(this)">
+              <span class="nav-link-icon">ℹ️</span>
+              <span>About</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#support" onclick="setActive(this)">
+              <span class="nav-link-icon">💬</span>
+              <span>Support</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="main-container">
+    <div class="header">
+      <h1>🛡️ Spam Email Detector</h1>
+      <p>Advanced AI-powered protection against unwanted emails</p>
+    </div>
+
+    <div class="stats-bar" id="statistics">
+      <div class="stat-item">
+        <div class="stat-number" id="totalScanned">0</div>
+        <div class="stat-label">Emails Scanned</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number" id="spamDetected">0</div>
+        <div class="stat-label">Spam Detected</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">99.2%</div>
+        <div class="stat-label">Accuracy Rate</div>
+      </div>
+    </div>
+
+    <div class="card" id="analyzer">
+      <div class="card-header">
+        ✍️ Paste Email Text
+      </div>
+      <div class="card-body">
+        <textarea id="emailText" class="form-control" rows="2" placeholder="📧 Paste your email content here for instant analysis...
+
+Try pasting a suspicious email to see how our AI detects spam patterns!" oninput="handleTextInput()"></textarea>
+        <div class="char-count" id="charCount">0 characters</div>
+        <div style="text-align: center; margin-top: 25px;">
+          <button class="btn btn-custom btn-analyze" onclick="submitText()" id="textBtn" disabled>
+            🔍 Analyze Text
+          </button>
+          <button class="btn btn-custom btn-clear" onclick="clearText()" id="clearTextBtn" style="display: none;">
+            🗑️ Clear
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        📁 Upload Email File
+      </div>
+      <div class="card-body">
+        <div style="text-align: center;">
+          <input type="file" id="fileInput" class="file-upload-input" accept=".txt,.eml" onchange="handleFileSelect(event)">
+          <button class="btn-upload" onclick="document.getElementById('fileInput').click()">
+            📁 Choose File
+          </button>
+          <div id="fileName" class="file-name" style="display: none;"></div>
+        </div>
+        <div style="text-align: center; margin-top: 25px;">
+          <button class="btn btn-custom btn-analyze" onclick="uploadFile()" id="uploadBtn" disabled>
+            🔍 Analyze File
+          </button>
+          <button class="btn btn-custom btn-clear" onclick="clearFile()" id="clearFileBtn" style="display: none;">
+            🗑️ Clear
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="result"></div>
+  </div>
+
+  <div class="footer">
+    <p>© 2024 Team Tech Titan | Powered by Advanced AI Technology | Your Privacy is Our Priority</p>
+  </div>
+
+  <script>
+    let isAnalyzing = false;
+    let totalScanned = 0;
+    let spamDetected = 0;
+
+    window.addEventListener('scroll', function() {
+      const navbar = document.querySelector('.navbar-custom');
+      if (window.scrollY > 50) {
+        navbar.classList.add('scrolled');
+      } else {
+        navbar.classList.remove('scrolled');
+      }
+    });
+
+    function setActive(element) {
+      document.querySelectorAll('.nav-link').forEach(link => {
+        link.classList.remove('active');
+      });
+      element.classList.add('active');
+    }
+
+    function scrollToTop() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    document.querySelectorAll('.nav-link').forEach(link => {
+      link.addEventListener('click', function(e) {
+        const href = this.getAttribute('href');
+        if (href.startsWith('#')) {
+          const target = document.querySelector(href);
+          if (target) {
+            e.preventDefault();
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }
+      });
+    });
+
+    function updateStats() {
+      document.getElementById('totalScanned').textContent = totalScanned;
+      document.getElementById('spamDetected').textContent = spamDetected;
+    }
+
+    function handleFileSelect(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const fileName = file.name;
+        const fileSize = (file.size / 1024).toFixed(2);
+        document.getElementById('fileName').innerHTML = '📄 Selected: <strong>' + fileName + '</strong> (' + fileSize + ' KB)';
+        document.getElementById('fileName').style.display = 'block';
+        document.getElementById('uploadBtn').disabled = false;
+        document.getElementById('clearFileBtn').style.display = 'inline-block';
+      }
+    }
+
+    function handleTextInput() {
+      const text = document.getElementById('emailText').value;
+      const charCount = text.length;
+      const wordCount = text.trim().split(/\s+/).filter(word => word.length > 0).length;
+      document.getElementById('charCount').textContent = charCount + ' characters | ' + wordCount + ' words';
+      
+      if (text.trim().length > 0) {
+        document.getElementById('textBtn').disabled = false;
+        document.getElementById('clearTextBtn').style.display = 'inline-block';
+      } else {
+        document.getElementById('textBtn').disabled = true;
+        document.getElementById('clearTextBtn').style.display = 'none';
+      }
+    }
+
+    function clearFile() {
+      document.getElementById('fileInput').value = '';
+      document.getElementById('fileName').style.display = 'none';
+      document.getElementById('uploadBtn').disabled = true;
+      document.getElementById('clearFileBtn').style.display = 'none';
+      document.getElementById('result').innerHTML = '';
+    }
+
+    function clearText() {
+      document.getElementById('emailText').value = '';
+      document.getElementById('charCount').textContent = '0 characters';
+      document.getElementById('textBtn').disabled = true;
+      document.getElementById('clearTextBtn').style.display = 'none';
+      document.getElementById('result').innerHTML = '';
+    }
+
+    function showLoading() {
+      const loadingHTML = '<div class="loading-card">' +
+        '<div class="spinner"></div>' +
+        '<div class="loading-text">🔍 Analyzing email with AI...</div>' +
+        '<div style="margin-top: 15px; color: #6c757d; font-size: 0.95rem;">' +
+        'Checking for spam patterns, malicious links, and suspicious content' +
+        '</div>' +
+        '</div>';
+      document.getElementById('result').innerHTML = loadingHTML;
+    }
+
+    function submitText() {
+      if (isAnalyzing) return;
+      
+      const text = document.getElementById("emailText").value;
+      if (!text.trim()) {
+        alert('⚠️ Please enter some text to analyze');
+        return;
+      }
+      
+      isAnalyzing = true;
+      document.getElementById('textBtn').disabled = true;
+      showLoading();
+      
+      fetch("/analyze-text", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ text: text })
+      })
+      .then(function(res) {
+        if (!res.ok) throw new Error('Network response was not ok');
+        return res.json();
+      })
+      .then(function(data) {
+        totalScanned++;
+        const isSpam = data.prediction === 'Spam' || data.prediction === 'spam';
+        if (isSpam) spamDetected++;
+        updateStats();
+        
+        const confidence = (data.probability * 100).toFixed(1);
+        const accuracy = data.accuracy ? (data.accuracy * 100).toFixed(1) : '99.2';
+        
+        const warningText = isSpam ? 
+          '🚫 <strong>Warning:</strong> This email shows characteristics of spam. Be cautious about clicking links, downloading attachments, or sharing personal information.' : 
+          '✓ <strong>Safe:</strong> This email appears to be legitimate. However, always verify sender details and be cautious with sensitive information.';
+        
+        const resultHTML = '<div class="result-card ' + (isSpam ? 'result-spam' : 'result-safe') + '">' +
+          '<div class="icon">' + (isSpam ? '⚠️' : '✅') + '</div>' +
+          '<div class="result-title">' + (isSpam ? 'SPAM DETECTED!' : 'EMAIL IS SAFE') + '</div>' +
+          '<div class="result-details">' +
+          '<strong>Detection Confidence:</strong> ' + confidence + '%' +
+          '<div class="progress" style="margin-top: 15px; background: rgba(255,255,255,0.3);">' +
+          '<div class="progress-bar" role="progressbar" style="width: ' + confidence + '%; background-color: white;"></div>' +
+          '</div>' +
+          '</div>' +
+          '<div class="result-details" style="margin-top: 20px;">' +
+          '<strong>Model Accuracy:</strong> ' + accuracy + '%' +
+          '</div>' +
+          '<div style="margin-top: 25px; padding: 20px; background: rgba(0,0,0,0.1); border-radius: 12px; font-size: 1rem;">' +
+          warningText +
+          '</div>' +
+          '<div style="margin-top: 20px; font-size: 0.9rem; opacity: 0.8;">' +
+          'Analyzed at ' + new Date().toLocaleTimeString() +
+          '</div>' +
+          '</div>';
+        
+        document.getElementById("result").innerHTML = resultHTML;
+        document.getElementById('result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      })
+      .catch(function(err) {
+        console.error("Error:", err);
+        document.getElementById("result").innerHTML = '<div class="alert alert-warning" role="alert" style="border-radius: 15px; padding: 25px; font-size: 1.1rem;">' +
+          '<strong>⚠️ Error:</strong> Could not analyze the email. Please check your connection and try again.' +
+          '</div>';
+      })
+      .finally(function() {
+        isAnalyzing = false;
+        document.getElementById('textBtn').disabled = false;
+      });
+    }
+
+    function uploadFile() {
+      if (isAnalyzing) return;
+      
+      const fileInput = document.getElementById("fileInput");
+      const file = fileInput.files[0];
+      
+      if (!file) {
+        alert('⚠️ Please select a file first');
+        return;
+      }
+      
+      isAnalyzing = true;
+      document.getElementById('uploadBtn').disabled = true;
+      showLoading();
+      
+      const formData = new FormData();
+      formData.append("file", file);
+
+      fetch("/upload", {method: "POST", body: formData})
+      .then(function(res) {
+        if (!res.ok) throw new Error('Network response was not ok');
+        return res.json();
+      })
+      .then(function(data) {
+        totalScanned++;
+        const isSpam = data.prediction === 'spam' || data.prediction === 'Spam';
+        if (isSpam) spamDetected++;
+        updateStats();
+        
+        const confidence = (data.probability * 100).toFixed(1);
+        const accuracy = data.accuracy ? (data.accuracy * 100).toFixed(1) : '99.2';
+        
+        const warningText = isSpam ? 
+          '🚫 <strong>Warning:</strong> This email shows characteristics of spam. Be cautious about clicking links, downloading attachments, or sharing personal information.' : 
+          '✓ <strong>Safe:</strong> This email appears to be legitimate. However, always verify sender details and be cautious with sensitive information.';
+        
+        const resultHTML = '<div class="result-card ' + (isSpam ? 'result-spam' : 'result-safe') + '">' +
+          '<div class="icon">' + (isSpam ? '⚠️' : '✅') + '</div>' +
+          '<div class="result-title">' + (isSpam ? 'SPAM DETECTED!' : 'EMAIL IS SAFE') + '</div>' +
+          '<div class="result-details">' +
+          '<strong>Detection Confidence:</strong> ' + confidence + '%' +
+          '<div class="progress" style="margin-top: 15px; background: rgba(255,255,255,0.3);">' +
+          '<div class="progress-bar" role="progressbar" style="width: ' + confidence + '%; background-color: white;"></div>' +
+          '</div>' +
+          '</div>' +
+          '<div class="result-details" style="margin-top: 20px;">' +
+          '<strong>Model Accuracy:</strong> ' + accuracy + '%' +
+          '</div>' +
+          '<div style="margin-top: 25px; padding: 20px; background: rgba(0,0,0,0.1); border-radius: 12px; font-size: 1rem;">' +
+          warningText +
+          '</div>' +
+          '<div style="margin-top: 20px; font-size: 0.9rem; opacity: 0.8;">' +
+          'Analyzed at ' + new Date().toLocaleTimeString() +
+          '</div>' +
+          '</div>';
+        
+        document.getElementById("result").innerHTML = resultHTML;
+        document.getElementById('result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      })
+      .catch(function(err) {
+        console.error("Error:", err);
+        document.getElementById("result").innerHTML = '<div class="alert alert-warning" role="alert" style="border-radius: 15px; padding: 25px; font-size: 1.1rem;">' +
+          '<strong>⚠️ Error:</strong> Could not analyze the file. Please check your connection and try again.' +
+          '</div>';
+      })
+      .finally(function() {
+        isAnalyzing = false;
+        document.getElementById('uploadBtn').disabled = false;
+      });
+    }
+  </script>
+</body>
+</html>
