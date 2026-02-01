@@ -7,7 +7,7 @@ accuracy = joblib.load("models/accuracy.pkl")
 
 app = Flask(__name__)
 
-
+print("succesfully deploy to the local host")
 model = joblib.load("models/spam_model.pkl")
 vectorizer = joblib.load("models/vectorizer.pkl")
 
@@ -58,4 +58,5 @@ def upload_file():
     })
 
 if __name__ == "__main__":
+
     app.run(debug=True)
